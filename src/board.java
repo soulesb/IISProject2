@@ -10,7 +10,9 @@ import java.util.Vector;
 public class board {
 
 	private int size;
+	private int numMoves;
 	private Map< coordinate,group > boardRep;
+	private Map< coordinate, Integer > influenceRep;
 	private ArrayList< group > boardGroups;
 	
 	public board( int size) {
@@ -18,6 +20,7 @@ public class board {
 		this.size = size;
 		boardRep = new HashMap<coordinate,group>( (size*size));
 		boardGroups = new ArrayList<group>();
+		numMoves = 0;
 	}
 	
 	public board( board preFig) {
@@ -42,21 +45,17 @@ public class board {
 	public void move( coordinate loc, Character color ) {
 		/// puts the stone on the board at the coordinate
 		
-		group g = new group(loc, color);
+		Set<coordinate> adj = getAdj(loc);
+		stone s = new stone( loc, color, adj );
+		
+		group g = new group( s, numMoves );
 		
 		addGroup(g);
+		
+		numMoves++;
 	}
 	
-	public Set<group> getAdjGroup( coordinate c ) {
-		Set<group> adjGroups = new HashSet<group>();
-		Set<coordinate> adj = getAdj(c);
-		for( coordinate coord : adj ) {
-			if( boardRep.containsKey(coord)) {
-				adjGroups.add(boardRep.get(coord));
-			}
-		}
-		return adjGroups;
-	}
+	
 	
 	public void capGroup( group prisoner ) {
 		/// replaces the representation of a group on the board with . and removes the group from the boardGroups struct
@@ -69,6 +68,45 @@ public class board {
 			boardRep.remove(c);
 		}
 		
+	}
+	
+	public boolean addGroup( group g ) {
+		Set<coordinate> mem = g.getMem();
+		Set<group> adjGroups = new HashSet<group>();
+		for( coordinate c : mem ) {
+			Set<group> s = getAdjGroup(c);
+			adjGroups.addAll(s);
+		}
+		if( !adjGroups.isEmpty() ) {
+			for( group tempG: adjGroups ) {
+				if( tempG.getColor().equals(g.getColor())) {
+					g.addMemSet(tempG.getMem());
+					boardGroups.remove(tempG);
+				}
+			}
+			mem = g.getMem();
+			for( coordinate c: mem ) {
+				boardRep.put(c, g);
+			}
+		}
+		else {
+			for( coordinate c: mem ) {
+				boardRep.put(c, g);
+			}
+		}
+		boolean temp = boardGroups.add(g);
+		return temp;
+	}
+	
+	public Set<group> getAdjGroup( coordinate c ) {
+		Set<group> adjGroups = new HashSet<group>();
+		Set<coordinate> adj = getAdj(c);
+		for( coordinate coord : adj ) {
+			if( boardRep.containsKey(coord)) {
+				adjGroups.add(boardRep.get(coord));
+			}
+		}
+		return adjGroups;
 	}
 	
 	public Set<coordinate> getAdj( coordinate c ) {
@@ -103,12 +141,21 @@ public class board {
 	}
 	
 	public Set<coordinate> getGLib( group g ) {
+		/*
 		Set<coordinate> totalLib = new HashSet<coordinate>();
 		Set<coordinate> membStones = g.getMem();
 		for( coordinate c : membStones ) {
 			totalLib.addAll(getSLib(c, g));
 		}
 		
+		return totalLib;
+		*/
+		
+		Set<coordinate> totalLib = new HashSet<coordinate>();
+		Set<stone> membStones = g.getStones();
+		for( stone s: membStones){
+			totalLib.addAll(getSLib(s));
+		}
 		return totalLib;
 	}
 	
@@ -126,6 +173,32 @@ public class board {
 		}
 		
 		return adj;
+	}
+	
+	public Set<coordinate> getSLib( stone s ) {
+		Set< coordinate > adj = s.getAdj();
+		for( coordinate c: adj) {
+			if( boardRep.containsKey(c)) {
+				adj.remove(c);
+			}
+		}
+		return adj;
+	}
+	
+	public int getNumMoves() {
+		return numMoves;
+	}
+	
+	public void getInfluence(){
+		
+	}
+	
+	public void getTerritory(){
+		
+	}
+	
+	public boolean isEmpty() {
+		return boardGroups.isEmpty();
 	}
 	
 	public void printBoard() {
@@ -158,36 +231,6 @@ public class board {
 				}
 			}
 		}
-	}
-	
-	public boolean addGroup( group g ) {
-		Set<coordinate> mem = g.getMem();
-		Set<group> adjGroups = new HashSet<group>();
-		for( coordinate c : mem ) {
-			Set<group> s = getAdjGroup(c);
-			adjGroups.addAll(s);
-		}
-		if( !adjGroups.isEmpty() ) {
-			System.out.println( "Howdy");
-			for( group tempG: adjGroups ) {
-				if( tempG.getColor().equals(g.getColor())) {
-					g.addMemSet(tempG.getMem());
-					boardGroups.remove(tempG);
-				}
-			}
-			mem = g.getMem();
-			for( coordinate c: mem ) {
-				boardRep.put(c, g);
-			}
-		}
-		else {
-			System.out.println("Dudy");
-			for( coordinate c: mem ) {
-				boardRep.put(c, g);
-			}
-		}
-		boolean temp = boardGroups.add(g);
-		return temp;
 	}
 	
 	private Character convIntToChar( int i ) {

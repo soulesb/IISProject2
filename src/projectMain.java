@@ -20,8 +20,8 @@ public class projectMain {
 		/// intialize players, at the moment we can assume that the program only needs to support two humnan players, but an input will be
 		/// good for when we need to check what combination of players are going to be playing
 		
-		player p1 = new player( 'B' );
-		player p2 = new player( 'W' );
+		player p1 = new human( 'B' );
+		player p2 = new human( 'W' );
 		
 		Scanner in = new Scanner(System.in);
 		coordinate p1Move = new coordinate(-2, 'z');

@@ -1,11 +1,13 @@
 
-public class player {
+public abstract class player {
 
 	Character color;
 	String cString;
 	int score;
 	int prisoners;
 	String lastMove;
+	
+	public abstract coordinate getMove( board b );
 	
 	public player( Character c ) {
 		color = c;
