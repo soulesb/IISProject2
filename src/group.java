@@ -8,6 +8,7 @@ public class group {
 	private Character color;
 	private Set<coordinate> liberties;
 	private Set< coordinate > members;
+	private influenceMap infRep;
 	private Set<stone> memStones;
 	
 	
@@ -15,6 +16,8 @@ public class group {
 		members = new HashSet<coordinate>();
 		liberties = new HashSet<coordinate>();
 		memStones = new HashSet<stone>();
+		
+		infRep = new influenceMap( i );
 		
 		members.add(s.getLocation());
 		memStones.add(s);

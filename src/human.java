@@ -10,5 +10,9 @@ public class human extends player {
 
 		return null;
 	}
+	
+	public int getPlayerType() {
+		return 1;
+	}
 
 }

@@ -1,19 +1,32 @@
+import java.util.HashSet;
+import java.util.Set;
+
 
 public class coordinate {
 
 	private int row;
-	private Character column;
+	private int column;
 	
-	public coordinate( int r, Character c) {
+	public coordinate( int r, int c) {
 		row = r;
 		column = c;
+	}
+	
+	public coordinate( int r, Character c ) {
+		row = r;
+		column = ( c - 64 );
+	}
+	
+	public coordinate() {
+		row = -1;
+		column = -1;
 	}
 	
 	public int getRow() {
 		return row;
 	}
 	
-	public Character getCol() {
+	public int getCol() {
 		return column;
 	}
 	
@@ -23,7 +36,7 @@ public class coordinate {
 	
 	@Override public boolean equals( Object o ) {
 		if( o instanceof coordinate) {
-			if( ((coordinate) o).getRow() == row && ((coordinate) o).getCol().equals(column)) {
+			if( ((coordinate) o).getRow() == row && ((coordinate) o).getCol() == column ) {
 				return true;
 			}
 		}
@@ -31,7 +44,7 @@ public class coordinate {
 	}
 	
 	@Override public int hashCode() {
-		return ( 32 * row * ((int)column-64));
+		return ( 32 * row * (column+3));
 	}
 	
 }

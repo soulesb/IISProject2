@@ -8,6 +8,7 @@ public abstract class player {
 	String lastMove;
 	
 	public abstract coordinate getMove( board b );
+	public abstract int getPlayerType();
 	
 	public player( Character c ) {
 		color = c;

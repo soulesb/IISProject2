@@ -12,37 +12,54 @@ public class board {
 	private int size;
 	private int numMoves;
 	private Map< coordinate,group > boardRep;
-	private Map< coordinate, Integer > influenceRep;
+	private influenceMap infRep;
 	private ArrayList< group > boardGroups;
 	
 	public board( int size) {
 		/// main constructor
 		this.size = size;
 		boardRep = new HashMap<coordinate,group>( (size*size));
+		
+		infRep = new influenceMap( size );
+		
 		boardGroups = new ArrayList<group>();
 		numMoves = 0;
 	}
 	
 	public board( board preFig) {
 		/// constructor for a board copy
+		size = preFig.getSize();
+		numMoves = preFig.getNumMoves();
+		boardRep = preFig.getBoardRep();
+		infRep = preFig.getInfluenceRep();
+		boardGroups = preFig.getBoardGroups();
 		
 	}
 	
 	public boolean isMoveValid( coordinate loc, Character color) {
 		/// checks if the coordinate is available and returns true if it is
 		/// needs to check if the played stone will have any liberties using the adj function
-		
-		int col = loc.getCol();
-		col -= 65;
-		if(loc.getRow() < (size+1) && col < (size) ) {
-			if( !boardRep.containsKey(loc)) {
+		//System.out.println(col);
+		if(loc.getRow() < (size+1) && loc.getCol() < (size+1) ) {
+			if(loc.getRow() > 0 && loc.getCol() > 0 ) {
+				if( !boardRep.containsKey(loc)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	public boolean isLoc( coordinate loc ) {
+		if(loc.getRow() < (size+1) && loc.getCol() < (size+1) ) {
+			if( loc.getRow() > 0 && loc.getCol() > 0) {
 				return true;
 			}
 		}
 		return false;
 	}
 	
-	public void move( coordinate loc, Character color ) {
+	public int move( coordinate loc, Character color ) {
 		/// puts the stone on the board at the coordinate
 		
 		Set<coordinate> adj = getAdj(loc);
@@ -53,10 +70,11 @@ public class board {
 		addGroup(g);
 		
 		numMoves++;
+		
+		
+		return infPulse(loc,color);
 	}
-	
-	
-	
+
 	public void capGroup( group prisoner ) {
 		/// replaces the representation of a group on the board with . and removes the group from the boardGroups struct
 		boardGroups.remove(prisoner);
@@ -111,28 +129,24 @@ public class board {
 	
 	public Set<coordinate> getAdj( coordinate c ) {
 		Set<coordinate> adjacent = new HashSet<coordinate>();
-		if( c.getRow() != 1) {
+		if( c.getRow() > 1) {
 			/// add the north intersection
 			coordinate n = new coordinate((c.getRow()+1), c.getCol());
 			adjacent.add(n);
 		}
-		if( c.getRow() != size) {
+		if( c.getRow() < size+1) {
 			/// add the south intersection
 			coordinate s = new coordinate((c.getRow()-1), c.getCol());
 			adjacent.add(s);
 		}
-		if( !c.getCol().equals('A')) {
+		if( c.getCol() > 1) {
 			/// add the west intersection
-			int i = c.getCol();
-			i--;
-			coordinate w = new coordinate(c.getRow(),convIntToChar(i));
+			coordinate w = new coordinate(c.getRow(),(c.getCol()-1));
 			adjacent.add(w);
 		}
-		if( !c.getCol().equals(convIntToChar(size-1))) {
+		if( c.getCol() < (size+1)) {
 			/// add the east intersection
-			int j = c.getCol();
-			j++;
-			coordinate e = new coordinate(c.getRow(),convIntToChar(j));
+			coordinate e = new coordinate(c.getRow(),(c.getCol()+1));
 			adjacent.add(e);
 		}
 		
@@ -185,17 +199,30 @@ public class board {
 		return adj;
 	}
 	
+	public void getTerritory(){
+		
+	}
+	
+	public int getSize() {
+		return size;
+	}
+	
 	public int getNumMoves() {
 		return numMoves;
 	}
 	
-	public void getInfluence(){
-		
+	public influenceMap getInfluenceRep(){
+		return infRep;
 	}
 	
-	public void getTerritory(){
-		
+	public Map<coordinate,group> getBoardRep() {
+		return boardRep;
 	}
+	
+	public ArrayList<group> getBoardGroups() {
+		return boardGroups;
+	}
+	
 	
 	public boolean isEmpty() {
 		return boardGroups.isEmpty();
@@ -231,6 +258,69 @@ public class board {
 				}
 			}
 		}
+	}
+	
+	public void printIMap() {
+		for( int row = 1; row < (size+1); row++ ) {
+			System.out.println();
+			for( int col = 0; col < size; col++) {
+				Character colChar = convIntToChar( col );
+				coordinate temp = new coordinate( row, colChar );
+				
+				int intCooler = infRep.getIMVal(temp);
+				
+				if( intCooler != -1 ) {
+					System.out.print( (intCooler/10) + " ");
+				}
+				else {
+					System.out.print(". ");
+				}
+			}
+		}
+	}
+	
+	private int infPulse( coordinate c, Character color ) {
+		
+		infRep.addStone(c,color);
+		int MaxDepth = 3;
+		
+		Map<coordinate,Integer> visited = new HashMap<coordinate,Integer>();
+		Map<coordinate,Integer> searchMap = new HashMap<coordinate,Integer>();
+		
+		searchMap.put(c, 0);
+		while( !searchMap.isEmpty() ) {
+			Set<coordinate> coSet = searchMap.keySet();
+			Iterator<coordinate> it = coSet.iterator();
+			coordinate pick = it.next();
+			Integer depth = searchMap.get(pick);
+			
+			//pick.printCoordinate();
+			
+			infRep.modInfVal( pick, color, 1 );
+			
+			if( searchMap.get(pick) < MaxDepth ) {
+				Set<coordinate> adj = getAdj(pick);
+				for( coordinate coTemp: adj ) {
+					if( isLoc(pick) ) {
+						if( !boardRep.containsKey(coTemp) ) {
+							if( visited.containsKey(coTemp)) {
+								if( searchMap.get(pick) < visited.get(coTemp) ) {
+									searchMap.put(coTemp, (searchMap.get(pick)+1) );
+									infRep.modInfVal( coTemp, color, 0);
+								}
+							}
+							else {
+								searchMap.put(coTemp, (searchMap.get(pick)+1) );
+							}
+						}
+					}
+				}
+			}
+
+			visited.put(pick, depth);
+			searchMap.remove(pick);
+		}
+		return (visited.size()-1);
 	}
 	
 	private Character convIntToChar( int i ) {
