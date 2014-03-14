@@ -1,8 +1,9 @@
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
 
-public class stone {
+public class stone implements Serializable {
 
 	private Character color;
 	private coordinate location;

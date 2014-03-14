@@ -1,11 +1,13 @@
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 
-public class influenceMap {
+public class influenceMap implements Serializable {
 
 	
 	private Map< coordinate, Integer > iR;
@@ -17,38 +19,36 @@ public class influenceMap {
 		
 	}
 	
+	public boolean contains( coordinate c ) {
+		return iR.containsKey(c);
+	}
+	
 	public boolean addStone( coordinate c, Character color ) {
+		/*
 		if(iR.containsKey(c)) {
 			int temp = iR.get(c);
 			if( temp <= 89 && temp >= 11) {
 				if( color.equals('B')) {
 					iR.put(c, 90);
-					//update map
-					//pulse(c, 0, 90, visited);
 					return true;
 				}
 				else if( color.equals('W')) {
 					iR.put(c, 10);
-					//update map
-					//pulse(c, 0, 10, visited);
 					return true;
 				}
 			}
 		}
 		else {
+		*/
 			if( color.equals('B')) {
 				iR.put(c, 90);
-				//update map
-				//pulse(c, 0, 90, visited);
 				return true;
 			}
 			else if( color.equals('W')) {
 				iR.put(c, 10);
-				//update map
-				//pulse(c, 0, 10, visited);
 				return true;
 			}
-		}
+		//}
 		return false;
 	}
 	
@@ -121,42 +121,17 @@ public class influenceMap {
 			adj.remove(a);
 		}
 	}
-	
-	/*
-	public Set<coordinate> getAdj(coordinate c) {
-		Set<coordinate> adjacent = new HashSet<coordinate>();
-		if( c.getRow() != 1) {
-			/// add the north intersection
-			coordinate n = new coordinate((c.getRow()+1), c.getCol());
-			adjacent.add(n);
-		}
-		if( c.getRow() != size) {
-			/// add the south intersection
-			coordinate s = new coordinate((c.getRow()-1), c.getCol());
-			adjacent.add(s);
-		}
-		if( c.getCol() != 1) {
-			/// add the west intersection
-			int i = c.getCol();
-			i--;
-			coordinate w = new coordinate(c.getRow(),convIntToChar(i));
-			adjacent.add(w);
-		}
-		if( !c.getCol().equals(convIntToChar(size-1))) {
-			/// add the east intersection
-			int j = c.getCol();
-			j++;
-			coordinate e = new coordinate(c.getRow(),convIntToChar(j));
-			adjacent.add(e);
-		}
-		
-		
-		return adjacent;
-	}
-	*/
 
+	public int get( coordinate c ) {
+		return iR.get(c);
+	}
+	
 	public Map<coordinate,Integer> getIMap() {
 		return iR;
+	}
+	
+	public Set<Entry<coordinate, Integer>> getIMapESet() {
+		return iR.entrySet();
 	}
 	
 	public int getIMVal( coordinate c ) {
@@ -188,12 +163,6 @@ public class influenceMap {
 		}
 		return false;
 	}
-	
-	private Character convIntToChar( int i ) {
-		/// converts an int to the corresponding letter
-		char temp = (char) (i + 'A');
-		return temp;
-	}
 
 	public void modInfVal(coordinate c, Character color, int mod) {
 		if( mod == 1) {
@@ -202,7 +171,12 @@ public class influenceMap {
 					if( !isStone( c ) ) {
 						int i = iR.get(c);
 						i += 3;
-						iR.put(c, i);
+						if( i <= 89 ) {
+							iR.put(c, i);
+						}
+						else {
+							iR.put(c,89);
+						}
 					}
 				}
 				else {
@@ -214,7 +188,12 @@ public class influenceMap {
 					if( !isStone( c )) {
 						int i = iR.get(c);
 						i -= 3;
-						iR.put(c, i);
+						if( i >= 11) {
+							iR.put(c, i);
+						}
+						else {
+							iR.put(c, 11);
+						}
 					}
 				}	
 				else {

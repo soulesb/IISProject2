@@ -1,8 +1,9 @@
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
 
-public class coordinate {
+public class coordinate implements Serializable {
 
 	private int row;
 	private int column;

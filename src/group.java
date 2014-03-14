@@ -1,8 +1,9 @@
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
 
-public class group {
+public class group implements Serializable {
 
 	private int groupID;
 	private Character color;

@@ -1,3 +1,4 @@
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -5,9 +6,10 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
+import java.util.Map.Entry;
 
 
-public class board {
+public class board implements Serializable {
 
 	private int size;
 	private int numMoves;
@@ -65,7 +67,7 @@ public class board {
 		Set<coordinate> adj = getAdj(loc);
 		stone s = new stone( loc, color, adj );
 		
-		group g = new group( s, numMoves );
+		group g = new group( s, boardRep.size() );
 		
 		addGroup(g);
 		
@@ -114,6 +116,29 @@ public class board {
 		}
 		boolean temp = boardGroups.add(g);
 		return temp;
+	}
+	
+	public int evalInf() {
+		int total = 0;
+		Set<Entry<coordinate, Integer>> eSet = infRep.getIMapESet();
+		
+		for(Entry<coordinate,Integer> e: eSet) {
+			int val = e.getValue();
+			
+			/// if value is a stone, or too low ignore it, otherwise add to the total
+			if( val != 90 || val != 10 ) {
+				/// not a stone
+				if( val > 59) {
+					// black controlled territory increase total
+					total += 1;
+				}
+				else if( val < 41) {
+					// white controlled territory, decrease total
+					total -= 1;
+				}
+			}
+		}
+		return total;
 	}
 	
 	public Set<group> getAdjGroup( coordinate c ) {
@@ -199,8 +224,26 @@ public class board {
 		return adj;
 	}
 	
-	public void getTerritory(){
-		
+	public scoreGo getTerritory(){
+		scoreGo s = new scoreGo();
+		Set<coordinate> stones = boardRep.keySet();
+		for( int r = 0; r < size+1; r++ ) {
+			for( int c = 0; c < size+1; c++ ) {
+				coordinate cor= new coordinate(r,c);
+				if( !stones.contains(cor)) {
+					if( infRep.contains(cor)) {
+						int val = infRep.get(cor);
+						if( val < 55 ) {
+							s.incBScore();
+						}
+						else {
+							s.incWScore();
+						}
+					}
+				}
+			}
+		}
+		return s;
 	}
 	
 	public int getSize() {
@@ -223,6 +266,15 @@ public class board {
 		return boardGroups;
 	}
 	
+	public board getClone() {
+		try {
+			return (board)(ObjectCloner.deepCopy(this));
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
 	
 	public boolean isEmpty() {
 		return boardGroups.isEmpty();
@@ -301,10 +353,10 @@ public class board {
 			if( searchMap.get(pick) < MaxDepth ) {
 				Set<coordinate> adj = getAdj(pick);
 				for( coordinate coTemp: adj ) {
-					if( isLoc(pick) ) {
-						if( !boardRep.containsKey(coTemp) ) {
-							if( visited.containsKey(coTemp)) {
-								if( searchMap.get(pick) < visited.get(coTemp) ) {
+					if( isLoc(pick) ) {  /// within the board
+						if( !boardRep.containsKey(coTemp) ) { /// is not a stone
+							if( visited.containsKey(coTemp)) { /// if already been visited
+								if( (searchMap.get(pick)+1) < visited.get(coTemp) ) { /// if current depth is less than visited depth
 									searchMap.put(coTemp, (searchMap.get(pick)+1) );
 									infRep.modInfVal( coTemp, color, 0);
 								}

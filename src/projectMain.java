@@ -38,8 +38,8 @@ public class projectMain {
 		boolean lastWasPass = false;
 		
 		while( true ) {
-			p1Move = getPlayerMove( p1, in, goBoard );
-			
+			p1Move = getPlayerMove( p1, in, goBoard.getClone() );
+		
 			/// make move
 			if( !p1Move.equals(passTest)) {
 				goBoard.move(p1Move, p1.getColor());
@@ -53,7 +53,7 @@ public class projectMain {
 			}
 			
 			boardPrint(goBoard);
-			p2Move = getPlayerMove( p2, in, goBoard );
+			p2Move = getPlayerMove( p2, in, goBoard.getClone() );
 			//p2Move = getMove(p2, in, goBoard);
 			
 			/// make move			
@@ -80,11 +80,11 @@ public class projectMain {
 	private static coordinate getPlayerMove(player p, Scanner in, board goBoard) {
 		if( p.getPlayerType() == 1 ) {
 			/// player is human ask them for moves
-			return getMove(p1, in, goBoard);
+			return getMove(p, in, goBoard);
 		}
 		else if( p.getPlayerType() == 2 ) {
 			/// player is an ai tell it to give a coordinate
-			getMove( p, goBoard);
+			return getMove( p, goBoard);
 		}
 		return new coordinate();
 	}
@@ -102,6 +102,7 @@ public class projectMain {
 				else if( input == 2 ) {
 					p1 = new AI( 'B' );
 					p2 = new human( 'W' );
+					
 					return;
 				}
 				else if( input == 3 ) {
@@ -122,9 +123,9 @@ public class projectMain {
 
 	private static coordinate getMove(player p, Scanner in, board b) {
 		boolean validMove = false;
-		coordinate move;
+		coordinate move = new coordinate();
 		while( !validMove ) {
-			System.out.print( p.getColorString() + ", please enter a move (ex. A5), or enter 'pass' to pass your move: ");
+			System.out.print( "\n" + p.getColorString() + ", please enter a move (ex. A5), or enter 'pass' to pass your move: ");
 			String input = in.next();
 			
 			if( input.equals("pass")) {
@@ -151,15 +152,18 @@ public class projectMain {
 	}
 	
 	private static coordinate getMove( player p, board b ) {
-		/// for getting ai moves, no neef for this silly scanning
-		return p.getMove(b);
+		/// for getting ai moves, no need for this silly scanning
+		System.out.println();
+		System.out.println( p.getColorString() + "'s move:");
+		coordinate move = p.getMove(b);
+		return move;
 	}
 
 	public static void boardPrint( board goBoard) {
 		System.out.println();
 		goBoard.printBoard();
 		System.out.println();
-		goBoard.printIMap();
+		//goBoard.printIMap();
 		System.out.println();
 	}
 }
